@@ -14,7 +14,7 @@ import streamlit as st
 from scipy.spatial import cKDTree
 
 from utils import viz_plotly as vp
-from utils.baselines import k_closest_pairs
+from utils.baselines import k_closest_pairs, nearest_neighbor_distances
 from utils.benchmark import (paper_algos, run_greedy_accuracy, run_scaling_experiment,
                              run_split_ratio_experiment, time_function, verify_correctness)
 from utils.data import box_for, generate_points, load_cif, plant_close_pair
@@ -161,7 +161,7 @@ def analyze_structure(points: np.ndarray, threshold: float) -> dict:
         "closest_pair": closest_pair,
         "dnc_seconds": dnc_seconds,
         "dnc_distance_count": dnc_stats["n_distance_computations"],
-        "nn_distance": vp.nearest_neighbor_distances(points),
+        "nn_distance": nearest_neighbor_distances(points),
         "pairs_below_threshold": len(cKDTree(points).query_pairs(threshold)),
         "top_pairs": k_closest_pairs(points, k=10),
     }

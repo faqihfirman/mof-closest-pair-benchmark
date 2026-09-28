@@ -26,6 +26,12 @@ def closest_pair_kdtree(points: np.ndarray) -> tuple[float, Pair]:
     return shortest_distance, (min(point_index, partner_index), max(point_index, partner_index))
 
 
+def nearest_neighbor_distances(points: np.ndarray) -> np.ndarray:
+    """Jarak tiap atom ke tetangga terdekatnya (kolom 0 hasil query = atom itu sendiri)."""
+    neighbor_distances, _ = cKDTree(points).query(points, k=2)
+    return neighbor_distances[:, 1]
+
+
 def k_closest_pairs(points: np.ndarray, k: int = 10) -> list[tuple[float, Pair]]:
     """k pasangan terdekat (eksak), terurut naik.
 

@@ -9,6 +9,8 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from scipy.spatial import cKDTree
 
+from .baselines import nearest_neighbor_distances
+
 # ---------------------------------------------------------------- palet (gaya shadcn/ui: zinc + aksen Tailwind)
 TRANSPARENT = "rgba(0,0,0,0)"
 PANEL_COLOR = "#ffffff"
@@ -127,12 +129,6 @@ def style_3d(fig: go.Figure, height: int = 640) -> go.Figure:
                    camera=dict(eye=dict(x=1.45, y=1.45, z=0.85))),
     )
     return fig
-
-
-def nearest_neighbor_distances(points: np.ndarray) -> np.ndarray:
-    """Jarak tiap atom ke tetangga terdekatnya (kolom 0 hasil query = atom itu sendiri)."""
-    neighbor_distances, _ = cKDTree(points).query(points, k=2)
-    return neighbor_distances[:, 1]
 
 
 def _line_segments(points: np.ndarray, index_pairs: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
