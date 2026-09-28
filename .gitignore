@@ -1,0 +1,23 @@
+# Claude Code (semua isi .claude/ tidak boleh masuk repo)
+.claude/
+**/.claude/
+CLAUDE.md
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Environment
+.venv/
+venv/
+.env
+
+# Streamlit (secrets lokal)
+.streamlit/secrets.toml
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
