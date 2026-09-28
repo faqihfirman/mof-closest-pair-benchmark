@@ -67,6 +67,15 @@ def default_algos(greedy_repeats: int = 20, seed: int = 0) -> dict[str, Algo]:
     }
 
 
+def paper_algos(seed: int = 0) -> dict[str, Algo]:
+    """Tiga algoritma yang dibahas paper: naive (Algo. 1), greedy 1x (Algo. 2), DnC (Algo. 3)."""
+    return {
+        "naive": closest_pair_naive,
+        "greedy_1x": lambda p: closest_pair_greedy(p, seed=seed),
+        "dc_standard": lambda p: closest_pair_dc(p, strip_mode="standard"),
+    }
+
+
 def verify_correctness(
     points: np.ndarray, algos: dict[str, Algo], atol: float = 1e-9
 ) -> pd.DataFrame:
