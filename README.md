@@ -24,17 +24,29 @@ streamlit run app.py
 
 ## Struktur
 ```
-utils/
-  data.py            generator titik (uniform/clustered/lattice_jitter), plant_close_pair, load_cif
-  naive.py           Algo. 1 (Python murni) + versi NumPy
-  greedy.py          Algo. 2 + versi berulang (riwayat konvergensi)
-  divide_conquer.py  Algo. 3, iteratif dengan stack buatan; strip "standard" / "paper"; statistik
-  baselines.py       KD-tree (scipy) sebagai ground truth
-  benchmark.py       timing, verifikasi, eksperimen skala / akurasi greedy / rasio pembagian
-  viz_plotly.py      chart Plotly interaktif (dashboard)
-app.py               dashboard Streamlit (UI saja)
-tests/               pytest
-data/                CIF dataset pcl (3856 atom, = dataset No. 8 paper)
+app.py                    pintu masuk dashboard: konfigurasi, sidebar, header, pilih tampilan
+.streamlit/
+  config.toml             tema (font Poppins, warna zinc)
+  style.css               gaya halaman gaya shadcn/ui
+utils/                    logika murni (tanpa plotly / streamlit)
+  data.py                 generator titik, plant_close_pair, load_cif
+  naive.py                Algo. 1 (Python murni) + versi NumPy
+  greedy.py               Algo. 2 + versi berulang + pencatat jalur
+  divide_conquer.py       Algo. 3, iteratif dengan stack buatan; strip "standard" / "paper"; trace
+  baselines.py            KD-tree, jarak tetangga terdekat, k pasangan terdekat
+  benchmark.py            timing, verifikasi, eksperimen skala / akurasi greedy / rasio pembagian
+dashboard/                semua yang berbau UI
+  theme.py                palet, font, gaya dasar chart
+  charts_3d.py            model atom, penelusuran DnC 3D, jalur greedy
+  charts_2d.py            proyeksi DnC, histogram, benchmark, skala, greedy, strip, rasio
+  components.py           card, detail_rows, note, show_chart
+  cache.py                pemuatan dan analisis data (di-cache)
+  config.py               konstanta
+  context.py              AppContext: dataset aktif yang dibagikan ke semua tampilan
+  views/                  satu file per tampilan (structure, divide_conquer, greedy, benchmark, strips)
+tests/                    pytest
+data/                     CIF dataset pcl (3856 atom, = dataset No. 8 paper)
+references/               paper referensi (PDF tidak ikut repo)
 ```
 
 ## Asumsi interpretasi paper
