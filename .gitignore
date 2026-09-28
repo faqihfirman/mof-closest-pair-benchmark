@@ -21,3 +21,6 @@ venv/
 .DS_Store
 .vscode/
 .idea/
+
+# Paper referensi (berhak cipta, tidak dipublikasikan)
+*.pdf
