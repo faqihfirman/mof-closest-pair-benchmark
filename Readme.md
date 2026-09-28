@@ -11,10 +11,8 @@ pip install -r requirements.txt
 
 ## Menjalankan
 ```bash
-python -m pytest -q           # 44 test, ~1 detik
-jupyter lab experiment.ipynb  # Restart & Run All, ~2 menit
+python -m pytest -q           # 45 test, ~1 detik
 ```
-Set `QUICK = True` di cell Setup untuk mode cepat.
 
 ### Dashboard interaktif
 ```bash
@@ -33,11 +31,9 @@ utils/
   divide_conquer.py  Algo. 3, iteratif dengan stack buatan; strip "standard" / "paper"; statistik
   baselines.py       KD-tree (scipy) sebagai ground truth
   benchmark.py       timing, verifikasi, eksperimen skala / akurasi greedy / rasio pembagian
-  viz.py             plot matplotlib (notebook)
   viz_plotly.py      chart Plotly interaktif (dashboard)
 app.py               dashboard Streamlit (UI saja)
 tests/               pytest
-experiment.ipynb     orkestrasi + visualisasi (tanpa implementasi algoritma)
 data/                CIF dataset pcl (3856 atom, = dataset No. 8 paper)
 ```
 
