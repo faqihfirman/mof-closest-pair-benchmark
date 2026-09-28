@@ -1,0 +1,12 @@
+numpy
+scipy
+pandas
+matplotlib
+pytest
+streamlit
+plotly
+jupyter
+nbconvert
+ipykernel
+# opsional: pembaca CIF dengan ekspansi simetri (tanpa ini dipakai parser bawaan, khusus CIF P1)
+# ase
