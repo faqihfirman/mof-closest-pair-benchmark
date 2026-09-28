@@ -13,7 +13,7 @@ import pandas as pd
 import streamlit as st
 from scipy.spatial import cKDTree
 
-from utils import viz_plotly as vp
+from dashboard import charts_2d, charts_3d, theme
 from utils.baselines import k_closest_pairs, nearest_neighbor_distances
 from utils.benchmark import (paper_algos, run_greedy_accuracy, run_scaling_experiment,
                              run_split_ratio_experiment, time_function, verify_correctness)
@@ -111,7 +111,7 @@ def show_chart(fig, key: str | None = None, is_3d: bool = False) -> None:
 
     Chart 3D boleh di-zoom dengan scroll/pinch; chart 2D tidak, agar scroll halaman tetap lancar.
     """
-    config = vp.PLOTLY_CONFIG_3D if is_3d else vp.PLOTLY_CONFIG
+    config = theme.PLOTLY_CONFIG_3D if is_3d else theme.PLOTLY_CONFIG
     st.plotly_chart(fig, theme=None, config=config, width="stretch", key=key)
 
 
@@ -263,13 +263,13 @@ if view == "Struktur 3D":
             mark_violations = control_columns[2].toggle("Tandai", value=source != SOURCE_MOF, key=f"mark_{source}",
                                                         help="Cincin oranye pada atom yang tetangganya < threshold")
             size_scale = control_columns[3].slider("Ukuran atom", 0.5, 2.5, 1.0, 0.1)
-            show_chart(vp.atoms_3d(points, closest_pair, symbols=symbols, color_mode=color_mode,
+            show_chart(charts_3d.atoms_3d(points, closest_pair, symbols=symbols, color_mode=color_mode,
                                    bond_radius=bond_radius, threshold=threshold if mark_violations else None,
                                    size_scale=size_scale, height=680), key="structure3d", is_3d=True)
     with inspector_column:
         with card("Pasangan terdekat", "Hasil divide-and-conquer"):
             pair_elements = f"{symbols[closest_pair[0]]} – {symbols[closest_pair[1]]}" if symbols else "—"
-            value_color = vp.ALERT if is_invalid else vp.OK
+            value_color = theme.ALERT if is_invalid else theme.OK
             st.markdown(f'<div class="big-value" style="color:{value_color}">{shortest_distance:.3f} Å</div>'
                         + detail_rows([("Atom A", f"#{closest_pair[0]}"), ("Atom B", f"#{closest_pair[1]}"),
                                        ("Elemen", pair_elements), ("Threshold", f"{threshold:.2f} Å"),
@@ -288,7 +288,7 @@ if view == "Struktur 3D":
                      "untuk jarak C–C. Yang anomali adalah pasangan ≪ 1 Å di peringkat atas.")
     with card("Distribusi jarak tetangga terdekat", "Jumlah atom per jarak ke tetangga terdekatnya; "
                                                     "garis merah = threshold"):
-        show_chart(vp.nn_histogram(analysis["nn_distance"], threshold, height=230), key="nnhist")
+        show_chart(charts_2d.nn_histogram(analysis["nn_distance"], threshold, height=230), key="nnhist")
 
 # ---------------------------------------------------------------- 2. divide & conquer
 elif view == "Divide & Conquer":
@@ -313,13 +313,13 @@ elif view == "Divide & Conquer":
         with card("Tahap penggabungan", "Urutan post-order: sub-masalah kecil lebih dulu, akar paling akhir"):
             current_step = st.slider("Tahap", 1, len(merge_steps), len(merge_steps), label_visibility="collapsed")
             step = merge_steps[current_step - 1]
-            step_chart = vp.dnc_step_3d if trace_view == "3D" else vp.dnc_step_2d
+            step_chart = charts_3d.dnc_step_3d if trace_view == "3D" else charts_2d.dnc_step_2d
             show_chart(step_chart(trace_points, sorted_to_original, step, height=600), key="dncstep",
                        is_3d=trace_view == "3D")
     strip_improved = step["d_after"] < step["d_children"] - 1e-12
     with inspector_column:
         with card(f"Tahap {current_step} dari {len(merge_steps)}", "Kondisi setelah strip diperiksa"):
-            st.markdown(f'<div class="big-value" style="color:{vp.ALERT if strip_improved else vp.BRIGHT_TEXT}">'
+            st.markdown(f'<div class="big-value" style="color:{theme.ALERT if strip_improved else theme.BRIGHT_TEXT}">'
                         f'{step["d_after"]:.3f} Å</div>' + detail_rows([
                             ("Level rekursi", str(step["depth"])),
                             ("Ukuran subset", str(step["hi"] - step["lo"])),
@@ -335,7 +335,7 @@ elif view == "Divide & Conquer":
                  "<code>|x − x_mid| &lt; d</code>, jadi hanya titik bercincin oranye yang diperiksa.")
             note(f"<br>Hasil akhir: <b>{trace_distance:.4f} Å</b>, pasangan #{trace_pair[0]} ↔ #{trace_pair[1]}.")
     with card("Evolusi d per tahap", "Titik merah = tahap ketika strip menemukan pasangan lintas yang lebih dekat"):
-        show_chart(vp.d_timeline(merge_steps, current_step), key="dtimeline")
+        show_chart(charts_2d.d_timeline(merge_steps, current_step), key="dtimeline")
 
 # ---------------------------------------------------------------- 3. greedy
 elif view == "Greedy":
@@ -345,13 +345,13 @@ elif view == "Greedy":
             greedy_seed = st.slider("Titik awal acak (seed greedy)", 0, 200, 0)
             visit_order: list[int] = []
             greedy_distance, greedy_pair = closest_pair_greedy(points, seed=greedy_seed, path=visit_order)
-            show_chart(vp.greedy_path_3d(points, visit_order, greedy_pair, closest_pair, height=620),
+            show_chart(charts_3d.greedy_path_3d(points, visit_order, greedy_pair, closest_pair, height=620),
                        key="greedy3d", is_3d=True)
     relative_error = (greedy_distance - shortest_distance) / shortest_distance * 100
     greedy_is_correct = relative_error <= 1e-9
     with inspector_column:
         with card("Hasil greedy 1×", "Satu kali jalan dari titik awal acak"):
-            st.markdown(f'<div class="big-value" style="color:{vp.OK if greedy_is_correct else vp.WARN}">'
+            st.markdown(f'<div class="big-value" style="color:{theme.OK if greedy_is_correct else theme.WARN}">'
                         f'{greedy_distance:.3f} Å</div>' + detail_rows([
                             ("Jarak sebenarnya", f"{shortest_distance:.3f} Å"),
                             ("Galat relatif", f"{relative_error:.1f} %"),
@@ -375,7 +375,7 @@ elif view == "Greedy":
             st.session_state["greedy_accuracy"] = (accuracy_table, dnc_time)
         if "greedy_accuracy" in st.session_state:
             accuracy_table, dnc_time = st.session_state["greedy_accuracy"]
-            show_chart(vp.greedy_chart(accuracy_table, dnc_time), key="greedychart")
+            show_chart(charts_2d.greedy_chart(accuracy_table, dnc_time), key="greedychart")
 
 # ---------------------------------------------------------------- 4. benchmark
 elif view == "Benchmark":
@@ -394,11 +394,11 @@ elif view == "Benchmark":
                 timing_rows = []
                 for key, algorithm in algorithms_to_run.items():
                     timing = time_function(algorithm, points, repeats=3, warmup=1, max_total_s=3.0)
-                    timing_rows.append({"key": key, "algoritma": vp.label(key), "time": timing.median,
+                    timing_rows.append({"key": key, "algoritma": theme.label(key), "time": timing.median,
                                         "correct": bool(correctness.loc[key, "correct"])})
             st.session_state["comparison"] = pd.DataFrame(timing_rows)
         if "comparison" in st.session_state:
-            show_chart(vp.compare_bars(st.session_state["comparison"]), key="comparebars")
+            show_chart(charts_2d.compare_bars(st.session_state["comparison"]), key="comparebars")
 
     with card("Eksperimen skala", "Waktu terhadap N (log-log) dengan acuan teoritis O(n²) dan O(n log n) · naive dibatasi N ≤ 6000"):
         scale_columns = st.columns([3, 2, 1, 0.8])
@@ -416,8 +416,8 @@ elif view == "Benchmark":
                                             repeats=scale_repeats, seed=seed) for name in scale_distributions],
                     ignore_index=True)
         if "scaling" in st.session_state:
-            show_chart(vp.scaling_chart(st.session_state["scaling"]), key="scaling")
-            speedup_figure = vp.speedup_chart(st.session_state["scaling"])
+            show_chart(charts_2d.scaling_chart(st.session_state["scaling"]), key="scaling")
+            speedup_figure = charts_2d.speedup_chart(st.session_state["scaling"])
             if speedup_figure is not None:
                 st.markdown('<div class="card-title" style="margin-top:8px">Speedup naive / DnC</div>',
                             unsafe_allow_html=True)
@@ -432,7 +432,7 @@ else:
         for name in DISTRIBUTIONS:
             _, stats_by_distribution[name] = closest_pair_dc(synthetic_points(strip_size, name, seed),
                                                              return_stats=True)
-        show_chart(vp.strip_chart(stats_by_distribution), key="strip")
+        show_chart(charts_2d.strip_chart(stats_by_distribution), key="strip")
         st.markdown('<div class="stats" style="grid-template-columns:repeat(3,minmax(0,1fr));margin:4px 0 0">' + "".join(
             f'<div class="stat"><div class="label">{name}</div>'
             f'<div class="value">{stats["n_distance_computations"]:,}</div>'
@@ -450,4 +450,4 @@ else:
                 st.session_state["ratio"] = run_split_ratio_experiment(
                     {size: synthetic_points(size, "uniform", seed) for size in ratio_sizes}, repeats=3)
         if "ratio" in st.session_state:
-            show_chart(vp.ratio_chart(st.session_state["ratio"]), key="ratio")
+            show_chart(charts_2d.ratio_chart(st.session_state["ratio"]), key="ratio")
