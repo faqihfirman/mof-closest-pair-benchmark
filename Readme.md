@@ -11,7 +11,7 @@ pip install -r requirements.txt
 
 ## Menjalankan
 ```bash
-python -m pytest -q           # 42 test, ~1 detik
+python -m pytest -q           # 44 test, ~1 detik
 jupyter lab experiment.ipynb  # Restart & Run All, ~2 menit
 ```
 Set `QUICK = True` di cell Setup untuk mode cepat.
@@ -20,7 +20,7 @@ Set `QUICK = True` di cell Setup untuk mode cepat.
 ```bash
 streamlit run app.py
 ```
-8 tab: motivasi, penelusuran DnC langkah demi langkah, perbandingan algoritma, skala, akurasi greedy, strip & rasio, dataset asli, kuis. Komputasi berat berjalan setelah menekan tombol ▶.
+5 tab: struktur 3D (dataset sintetis atau MOF CIF, pasangan terdekat disorot), penelusuran Divide & Conquer langkah demi langkah (3D/2D), jalur greedy 3D + uji akurasi, benchmark, serta strip & rasio pembagian. Semua chart interaktif (Plotly). Komputasi berat berjalan setelah menekan tombol Jalankan.
 
 > Catatan: `streamlit` menuntut `protobuf>=5.26`, sedangkan `tensorflow 2.16` menuntut `<5`. Di env yang juga berisi TensorFlow, pakai env terpisah untuk dashboard ini.
 
@@ -33,7 +33,8 @@ utils/
   divide_conquer.py  Algo. 3, iteratif dengan stack buatan; strip "standard" / "paper"; statistik
   baselines.py       KD-tree (scipy) sebagai ground truth
   benchmark.py       timing, verifikasi, eksperimen skala / akurasi greedy / rasio pembagian
-  viz.py             semua plot
+  viz.py             plot matplotlib (notebook)
+  viz_plotly.py      chart Plotly interaktif (dashboard)
 app.py               dashboard Streamlit (UI saja)
 tests/               pytest
 experiment.ipynb     orkestrasi + visualisasi (tanpa implementasi algoritma)
