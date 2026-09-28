@@ -8,40 +8,49 @@ import numpy as np
 Pair = tuple[int, int]
 
 
-def _greedy_walk(pts: np.ndarray, start: int, path: list | None = None) -> tuple[float, Pair]:
-    """Satu jalan greedy dari titik `start`. Mengembalikan (jarak kuadrat, (i, j)).
+def _greedy_walk(
+    points_array: np.ndarray, start_index: int, path: list | None = None
+) -> tuple[float, Pair]:
+    """Satu jalan greedy dari titik `start_index`. Mengembalikan (jarak kuadrat, (i, j)).
 
     Jika `path` berupa list, indeks titik yang dikunjungi ditambahkan berurutan.
     """
-    n = len(pts)
-    alive = np.ones(n, dtype=bool)
-    alive[start] = False
-    remaining = n - 1
-    cur = start
-    best_d2 = math.inf
+    num_points = len(points_array)
+    is_unvisited = np.ones(num_points, dtype=bool)
+    is_unvisited[start_index] = False  # "hapus" titik awal dari himpunan
+    unvisited_count = num_points - 1
+    current_index = start_index
+    best_squared = math.inf
     best_pair: Pair = (-1, -1)
     if path is not None:
-        path.append(start)
-    while remaining > 0:
-        # Kandidat: titik tersisa dalam kubus berpusat di titik saat ini,
+        path.append(start_index)
+
+    while unvisited_count > 0:
+        # Kandidat: titik belum dikunjungi di dalam kubus berpusat di titik saat ini,
         # setengah sisi = jarak terpendek saat ini (inf pada langkah pertama -> semua titik).
-        half = math.sqrt(best_d2)
-        in_cube = alive & np.all(np.abs(pts - pts[cur]) <= half, axis=1)
-        cand = np.flatnonzero(in_cube)
-        if len(cand) == 0:
+        cube_half_side = math.sqrt(best_squared)
+        offsets = np.abs(points_array - points_array[current_index])
+        inside_cube = is_unvisited & np.all(offsets <= cube_half_side, axis=1)
+        candidate_indices = np.flatnonzero(inside_cube)
+        if len(candidate_indices) == 0:
             break  # tidak ada titik di sekitar: berhenti (langkah 4 paper)
-        diff = pts[cand] - pts[cur]
-        d2 = np.einsum("ij,ij->i", diff, diff)
-        k = int(np.argmin(d2))
-        nxt = int(cand[k])
-        if d2[k] < best_d2:  # pasangan terbaik hanya diperbarui jika lebih pendek
-            best_d2, best_pair = float(d2[k]), (cur, nxt)
-        cur = nxt  # pindah ke kandidat terdekat
+
+        # Cari kandidat terdekat dari titik saat ini.
+        differences = points_array[candidate_indices] - points_array[current_index]
+        candidate_squared = np.einsum("ij,ij->i", differences, differences)
+        nearest_rank = int(np.argmin(candidate_squared))
+        nearest_index = int(candidate_indices[nearest_rank])
+        nearest_squared = float(candidate_squared[nearest_rank])
+
+        if nearest_squared < best_squared:  # pasangan terbaik hanya diperbarui jika lebih pendek
+            best_squared, best_pair = nearest_squared, (current_index, nearest_index)
+
+        current_index = nearest_index  # pindah ke kandidat terdekat
         if path is not None:
-            path.append(cur)
-        alive[cur] = False
-        remaining -= 1
-    return best_d2, best_pair
+            path.append(current_index)
+        is_unvisited[current_index] = False
+        unvisited_count -= 1
+    return best_squared, best_pair
 
 
 def closest_pair_greedy(
@@ -58,13 +67,13 @@ def closest_pair_greedy(
     - Perbandingan memakai jarak kuadrat; akar diambil di akhir.
     Hasil tidak dijamin optimal. `path` (opsional) diisi urutan titik yang dikunjungi.
     """
-    pts = np.asarray(points, dtype=float)
-    if len(pts) < 2:
+    points_array = np.asarray(points, dtype=float)
+    if len(points_array) < 2:
         return math.inf, (-1, -1)
-    rng = np.random.default_rng(seed)
-    start = int(rng.integers(len(pts)))
-    d2, (i, j) = _greedy_walk(pts, start, path)
-    return math.sqrt(d2), (min(i, j), max(i, j))
+    random_generator = np.random.default_rng(seed)
+    start_index = int(random_generator.integers(len(points_array)))
+    best_squared, (index_a, index_b) = _greedy_walk(points_array, start_index, path)
+    return math.sqrt(best_squared), (min(index_a, index_b), max(index_a, index_b))
 
 
 def closest_pair_greedy_repeated(
@@ -75,19 +84,21 @@ def closest_pair_greedy_repeated(
     Mengembalikan (jarak, pasangan, riwayat) dengan riwayat[k] = jarak terbaik
     setelah pengulangan ke-(k+1), untuk plot konvergensi.
     """
-    pts = np.asarray(points, dtype=float)
-    n = len(pts)
-    if n < 2:
+    points_array = np.asarray(points, dtype=float)
+    num_points = len(points_array)
+    if num_points < 2:
         return math.inf, (-1, -1), np.full(repeats, math.inf)
-    rng = np.random.default_rng(seed)
-    starts = rng.choice(n, size=repeats, replace=repeats > n)
-    best_d2 = math.inf
+    random_generator = np.random.default_rng(seed)
+    start_indices = random_generator.choice(num_points, size=repeats, replace=repeats > num_points)
+
+    best_squared = math.inf
     best_pair: Pair = (-1, -1)
-    history = np.empty(repeats)
-    for r, s in enumerate(starts):
-        d2, pair = _greedy_walk(pts, int(s))
-        if d2 < best_d2:
-            best_d2, best_pair = d2, pair
-        history[r] = math.sqrt(best_d2)
-    i, j = best_pair
-    return math.sqrt(best_d2), (min(i, j), max(i, j)), history
+    best_so_far_history = np.empty(repeats)
+    for repeat_number, start_index in enumerate(start_indices):
+        walk_squared, walk_pair = _greedy_walk(points_array, int(start_index))
+        if walk_squared < best_squared:
+            best_squared, best_pair = walk_squared, walk_pair
+        best_so_far_history[repeat_number] = math.sqrt(best_squared)
+
+    index_a, index_b = best_pair
+    return math.sqrt(best_squared), (min(index_a, index_b), max(index_a, index_b)), best_so_far_history
