@@ -162,3 +162,30 @@ def test_dc_trace():
     assert events[-1]["pair"] == pair and events[-1]["d_after"] == pytest.approx(d)
     assert all(e["d_after"] <= e["d_children"] + 1e-12 for e in events)
     assert closest_pair_dc(pts)[0] == d  # trace tidak mengubah hasil
+
+
+def test_k_closest_pairs_matches_bruteforce():
+    from itertools import combinations
+    from utils.baselines import k_closest_pairs
+    pts = generate_points(120, "clustered", seed=8)
+    pts = np.vstack([pts, pts[3]])  # titik kembar
+    brute = sorted((float(np.linalg.norm(pts[i] - pts[j])), (i, j)) for i, j in combinations(range(len(pts)), 2))
+    got = k_closest_pairs(pts, k=10)
+    assert [d for d, _ in got] == pytest.approx([d for d, _ in brute[:10]])
+
+
+def test_greedy_path_records_visits():
+    pts = generate_points(300, seed=9)
+    path: list = []
+    d, pair = closest_pair_greedy(pts, seed=3, path=path)
+    assert len(path) == len(set(path)) >= 2
+    assert set(pair) <= set(path)
+
+
+def test_paper_algos_only_three():
+    from utils.benchmark import paper_algos
+    algos = paper_algos()
+    assert list(algos) == ["naive", "greedy_1x", "dc_standard"]
+    pts = generate_points(150, seed=2)
+    df = verify_correctness(pts, algos).set_index("algorithm")
+    assert df.loc["naive", "correct"] and df.loc["dc_standard", "correct"]
