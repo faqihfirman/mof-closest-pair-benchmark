@@ -12,9 +12,9 @@ import streamlit as st
 
 from dashboard.cache import analyze_structure, load_dataset
 from dashboard.components import note, sidebar_group
-from dashboard.config import DISTRIBUTIONS, LOGO_SVG, SOURCE_MOF, SOURCE_SYNTHETIC, VIEWS
+from dashboard.config import DISTRIBUTIONS, LOGO_SVG, SOURCE_DEMO_2D, SOURCE_MOF, SOURCE_SYNTHETIC, VIEWS
 from dashboard.context import AppContext
-from dashboard.views import benchmark, divide_conquer, greedy, strips, structure
+from dashboard.views import benchmark, demo_2d, divide_conquer, greedy, strips, structure
 
 st.set_page_config(page_title="Closest-Pair Analyzer", page_icon="⚛", layout="wide",
                    initial_sidebar_state="expanded")
@@ -30,7 +30,7 @@ with st.sidebar:
         <div class="app-subtitle" style="font-size:12px">Analyzer</div></div></div></div>''',
                 unsafe_allow_html=True)
     sidebar_group("Dataset")
-    source = st.selectbox("Sumber data", [SOURCE_SYNTHETIC, SOURCE_MOF])
+    source = st.selectbox("Sumber data", [SOURCE_SYNTHETIC, SOURCE_MOF, SOURCE_DEMO_2D])
     if source == SOURCE_SYNTHETIC:
         num_points = st.slider("Jumlah atom N", 50, 5000, 600, 50)
         distribution = st.selectbox("Distribusi", DISTRIBUTIONS,
@@ -42,12 +42,24 @@ with st.sidebar:
     else:
         num_points, distribution, seed, plant_pair, planted_distance = 0, "uniform", 0, False, 0.0
 
-    sidebar_group("Kriteria validitas")
-    threshold = st.slider("Threshold (Å)", 0.5, 2.5, 1.2, 0.05,
-                          help="Struktur dibuang bila jarak atom terdekat < threshold (ikatan C≡C = 1.20 Å).")
+    if source != SOURCE_DEMO_2D:
+        sidebar_group("Kriteria validitas")
+        threshold = st.slider("Threshold (Å)", 0.5, 2.5, 1.2, 0.05,
+                              help="Struktur dibuang bila jarak atom terdekat < threshold (ikatan C≡C = 1.20 Å).")
     st.divider()
     note("Reproduksi <i>A divide-and-conquer solution for the closest-pair problem in computer-aided "
          "MOF assembly</i>, Li et al., Comput. Mater. Sci. 248 (2025) 113606.")
+
+if source == SOURCE_DEMO_2D:
+    st.markdown(f"""
+    <div class="app-header">
+      <div class="brand"><div class="logo">{LOGO_SVG}</div>
+        <div><div class="app-title">Demo 2D · Step-by-step</div>
+        <div class="app-subtitle">Naive vs Greedy vs Divide & Conquer pada 7 titik tetap</div></div></div>
+      <div class="header-meta"><span class="chip">P1..P7</span><span class="chip">Euclidean 2D</span></div>
+    </div>""", unsafe_allow_html=True)
+    demo_2d.render()
+    st.stop()
 
 try:
     points, symbols = load_dataset(source, num_points, distribution, seed, plant_pair, planted_distance)

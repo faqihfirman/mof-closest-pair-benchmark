@@ -11,6 +11,9 @@ from plotly.subplots import make_subplots
 from .theme import (ACCENT, ALERT, BODY_TEXT, BRIGHT_TEXT, DIST_COLORS, INACTIVE_ATOM, MUTED_TEXT, OK, TRANSPARENT,
                     VIOLET, WARN, color, label, rgba, style, style_subplot_titles)
 
+CORAL = "#fb7185"
+NEUTRAL_POINT = "#a1a1aa"
+
 
 def dnc_step_2d(points: np.ndarray, sorted_to_original: np.ndarray, merge_step: dict,
                 height: int = 600) -> go.Figure:
@@ -47,6 +50,74 @@ def dnc_step_2d(points: np.ndarray, sorted_to_original: np.ndarray, merge_step: 
     fig.update_yaxes(scaleanchor="x", title_text="y (Å) · proyeksi XY")
     fig.update_xaxes(title_text="x (Å)")
     return style(fig, height, legend_bottom=True)
+
+
+def demo_step_2d(points: dict[str, tuple[float, float]], algo: str, state: dict, height: int = 460) -> go.Figure:
+    """Scatter 2D dataset demo (P1..P7) pada satu langkah, gaya seragam lintas tab.
+
+    `state` = keluaran `utils.demo_2d.state_at()`: pasangan yang dibandingkan, terbaik saat
+    ini, grup kiri/kanan (DnC), garis pembagi + strip (DnC), titik `current` (Greedy).
+    """
+    ids = list(points)
+    xs = [points[p][0] for p in ids]
+    ys = [points[p][1] for p in ids]
+    compare_pair = set(state["compare_pair"] or [])
+    skip_points = set(state["skip_points"] or [])
+    best_pair = set(state["best_pair"] or [])
+    group = set(state["group"]) if state["group"] else None
+    left = set(state["left"]) if state["left"] else None
+    remaining = set(state["remaining"]) if state["remaining"] is not None else None
+    current = state["current"]
+
+    fig = go.Figure()
+    if algo == "dnc" and state["strip"] is not None:
+        lo, hi = state["strip"]
+        fig.add_vrect(x0=lo, x1=hi, fillcolor=rgba(WARN, 0.10), line=dict(color=rgba(WARN, 0.5), width=1))
+    if algo == "dnc" and state["divider"] is not None:
+        fig.add_vline(x=state["divider"], line=dict(color="#52525b", dash="dash", width=1.5))
+
+    marker_colors, marker_lines, opacities = [], [], []
+    for pid in ids:
+        if pid in best_pair:
+            marker_colors.append(OK)
+        elif pid in compare_pair:
+            marker_colors.append(WARN)
+        elif algo == "dnc" and left is not None:
+            marker_colors.append(ACCENT if pid in left else CORAL)
+        else:
+            marker_colors.append(NEUTRAL_POINT)
+        marker_lines.append(ALERT if pid == current else "rgba(0,0,0,0)")
+        if algo == "greedy" and remaining is not None:
+            opacities.append(1.0 if (pid == current or pid in remaining or pid in best_pair) else 0.3)
+        elif algo == "dnc" and group is not None:
+            opacities.append(1.0 if pid in group or pid in best_pair else 0.3)
+        else:
+            opacities.append(1.0)
+
+    fig.add_trace(go.Scatter(
+        x=xs, y=ys, mode="markers+text", text=ids, textposition="top center",
+        textfont=dict(size=12, color=BRIGHT_TEXT),
+        marker=dict(size=22, color=marker_colors, opacity=opacities,
+                    line=dict(width=3, color=marker_lines)),
+        hovertemplate="%{text} (%{x}, %{y})<extra></extra>", showlegend=False))
+
+    if state["best_pair"]:
+        a, b = state["best_pair"]
+        fig.add_trace(go.Scatter(x=[points[a][0], points[b][0]], y=[points[a][1], points[b][1]],
+                                 mode="lines", line=dict(color=OK, width=3), hoverinfo="skip", showlegend=False))
+    if state["compare_pair"] and len(state["compare_pair"]) == 2:
+        a, b = state["compare_pair"]
+        fig.add_trace(go.Scatter(x=[points[a][0], points[b][0]], y=[points[a][1], points[b][1]],
+                                 mode="lines", line=dict(color=WARN, width=2, dash="dot"),
+                                 hoverinfo="skip", showlegend=False))
+    if skip_points and current:
+        fig.add_trace(go.Scatter(x=[points[current][0]], y=[points[current][1]], mode="markers",
+                                 marker=dict(size=32, color=TRANSPARENT, line=dict(color=MUTED_TEXT, width=2, dash="dot")),
+                                 hoverinfo="skip", showlegend=False))
+
+    fig.update_xaxes(title_text="x", range=[0, 10])
+    fig.update_yaxes(title_text="y", range=[0, 7], scaleanchor="x")
+    return style(fig, height, show_legend=False)
 
 
 def d_timeline(merge_steps: list[dict], current_step: int) -> go.Figure:

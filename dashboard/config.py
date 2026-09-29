@@ -4,6 +4,7 @@ from pathlib import Path
 CIF_PATH = Path(__file__).resolve().parent.parent / "data" / "pcl_v1-on15-3D_1-oe107.cif"
 SOURCE_SYNTHETIC = "Sintetis"
 SOURCE_MOF = "MOF pcl (CIF)"
+SOURCE_DEMO_2D = "Demo 2D (step-by-step)"
 DISTRIBUTIONS = ["uniform", "clustered", "lattice_jitter"]
 MOF_BOND_RADIUS = 1.75  # Å: batas gambar ikatan kovalen pada dataset MOF
 VIEWS = ["Struktur 3D", "Divide & Conquer", "Greedy", "Benchmark", "Strip & rasio"]
