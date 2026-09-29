@@ -55,13 +55,30 @@ def render(_ctx=None) -> None:
                             ("Titik terlibat", ", ".join(entry.get("points") or []) or "-"),
                             ("Jarak dihitung", f"{entry['distance']:.3f}" if entry.get("distance") is not None else "-"),
                         ]), unsafe_allow_html=True)
-        button_columns = st.columns(2)
-        if button_columns[0].button("← Sebelumnya", width="stretch", disabled=step == 0, key=f"demo2d_prev_{tab}"):
+        st.markdown('''<style>
+            div[class*="st-key-demo2d_prev_"] button {
+                background-color: #fee2e2; border-color: #fecaca; color: #b91c1c;
+            }
+            div[class*="st-key-demo2d_next_"] button {
+                background-color: #dbeafe; border-color: #bfdbfe; color: #1d4ed8;
+            }
+            div[class*="st-key-demo2d_reset_"] button {
+                background-color: #fef3c7; border-color: #fde68a; color: #92400e;
+            }
+            div[class*="st-key-demo2d_prev_"] button:hover,
+            div[class*="st-key-demo2d_next_"] button:hover,
+            div[class*="st-key-demo2d_reset_"] button:hover { filter: brightness(0.96); }
+        </style>''', unsafe_allow_html=True)
+        nav_columns = st.columns(2)
+        if nav_columns[0].button("← Sebelumnya", width="stretch", disabled=step == 0, key=f"demo2d_prev_{tab}"):
             st.session_state[step_key] = max(0, step - 1)
             st.rerun()
-        if button_columns[1].button("Berikutnya →", width="stretch", disabled=step >= len(log) - 1,
-                                    key=f"demo2d_next_{tab}"):
+        if nav_columns[1].button("Berikutnya →", width="stretch", disabled=step >= len(log) - 1,
+                                 key=f"demo2d_next_{tab}"):
             st.session_state[step_key] = min(len(log) - 1, step + 1)
+            st.rerun()
+        if st.button("↺ Reset", width="stretch", disabled=step == 0, key=f"demo2d_reset_{tab}"):
+            st.session_state[step_key] = 0
             st.rerun()
 
     greedy_optimal = abs(greedy_result["finalDistance"] - naive_result["finalDistance"]) < 1e-9
