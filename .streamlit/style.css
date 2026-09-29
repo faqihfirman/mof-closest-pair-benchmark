@@ -2,7 +2,9 @@
 .stApp, .stApp p, .stApp div, .stApp label, .stApp button, .stApp input, .stApp textarea, .stApp li,
 .stApp span:not([data-testid="stIconMaterial"]) { font-family: 'Poppins', ui-sans-serif, system-ui, sans-serif; }
 [data-testid="stHeader"] { background: transparent; }
-.block-container { padding-top: 3.2rem; padding-bottom: 3rem; max-width: 1520px; }
+.block-container { padding-top: 1.4rem; padding-bottom: 3rem; max-width: 1520px; }
+[data-testid="stSidebarUserContent"] { padding-top: 0.5rem; margin-top: -33px; }
+[data-testid="stSidebarCollapseButton"] { padding-top: 0.5rem; }
 
 /* kartu = st.container(border=True) */
 [data-testid="stVerticalBlockBorderWrapper"], div[data-testid="stVerticalBlock"][style*="border"] {
