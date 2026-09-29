@@ -1,5 +1,5 @@
 """Mode "Demo 2D (step-by-step)": bandingkan Naive, Greedy, dan Divide & Conquer langkah
-demi langkah pada dataset 2D tetap (P1..P7), untuk demo presentasi paper.
+demi langkah pada dataset 2D tetap (A..G), untuk demo presentasi paper.
 """
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ def render(_ctx=None) -> None:
     naive_result = run_naive()
     dnc_result = run_dnc()
 
-    with card("Dataset demo", "7 titik tetap (P1..P7), sama untuk ketiga algoritma"):
+    with card("Dataset demo", "7 titik tetap (A..G), sama untuk ketiga algoritma"):
         control_columns = st.columns([2.4, 1], vertical_alignment="bottom")
         tab = control_columns[0].segmented_control("Algoritma", ALGO_TABS, default=ALGO_TABS[0],
                                                     key="demo2d_tab") or ALGO_TABS[0]
@@ -28,7 +28,7 @@ def render(_ctx=None) -> None:
             start_id = control_columns[1].selectbox("Titik awal", list(POINTS), key="demo2d_start",
                                                      label_visibility="collapsed")
         else:
-            start_id = "P1"
+            start_id = "A"
 
     greedy_result = run_greedy(start_id)
     result = {"Naive": naive_result, "Greedy": greedy_result, "Divide & Conquer": dnc_result}[tab]
