@@ -1,4 +1,4 @@
-"""Dataset 2D tetap (P1..P7) + tiga algoritma closest-pair yang diinstrumentasi.
+"""Dataset 2D tetap (A..G) + tiga algoritma closest-pair yang diinstrumentasi.
 
 Dipakai oleh tampilan "Demo 2D" di dashboard: tiap fungsi menjalankan algoritmanya sambil
 mencatat log operasi (`log`), supaya UI bisa memutar ulang langkah demi langkah tanpa
@@ -12,8 +12,8 @@ from typing import TypedDict
 Pair = tuple[str, str]
 
 POINTS: dict[str, tuple[float, float]] = {
-    "P1": (1, 1), "P2": (2, 5), "P3": (4, 3), "P4": (5, 4),
-    "P5": (7, 1), "P6": (8, 6), "P7": (9, 2),
+    "A": (1, 3), "B": (3, 2), "C": (3, 5), "D": (4, 2),
+    "E": (6, 4), "F": (7, 1), "G": (8, 3),
 }
 
 

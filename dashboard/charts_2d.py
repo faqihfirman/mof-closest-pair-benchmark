@@ -53,7 +53,7 @@ def dnc_step_2d(points: np.ndarray, sorted_to_original: np.ndarray, merge_step: 
 
 
 def demo_step_2d(points: dict[str, tuple[float, float]], algo: str, state: dict, height: int = 460) -> go.Figure:
-    """Scatter 2D dataset demo (P1..P7) pada satu langkah, gaya seragam lintas tab.
+    """Scatter 2D dataset demo (A..G) pada satu langkah, gaya seragam lintas tab.
 
     `state` = keluaran `utils.demo_2d.state_at()`: pasangan yang dibandingkan, terbaik saat
     ini, grup kiri/kanan (DnC), garis pembagi + strip (DnC), titik `current` (Greedy).
